@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html ng-app="todoApp">
+<head>
+<title>Job Controller</title>
+<link href="css/bootstrap.css" rel="stylesheet" />
+<link href="css/bootstrap-theme.css" rel="stylesheet" />
+<style>
+    .blink_me {
+        -webkit-animation-name: blinker;
+        -webkit-animation-duration: 2s;
+        -webkit-animation-timing-function: linear;
+        -webkit-animation-iteration-count: infinite;
+
+        -moz-animation-name: blinker;
+        -moz-animation-duration: 2s;
+        -moz-animation-timing-function: linear;
+        -moz-animation-iteration-count: infinite;
+
+        animation-name: blinker;
+        animation-duration: 2s;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+    }
+
+    @-moz-keyframes blinker {
+        0% {
+            opacity: 1.0;
+        }
+        50% {
+            opacity: 0.0;
+        }
+    }
+
+    @-webkit-keyframes blinker {
+        0% { opacity: 1.0; }
+        50% { opacity: 0.0; }
+        100% { opacity: 1.0; }
+    }
+
+    @keyframes blinker {
+        0% { opacity: 1.0; }
+        50% { opacity: 0.0; }
+        100% { opacity: 1.0; }
+    }
+</style>
+<script src="js/angular.js"></script>
+<script src="js/jquery-2.1.1.min.js"></script>
+<script>
+var model = {
+    date: "01/03/2014 (Fri)",
+    workBays: [
+        {rown:1,workBay:"WB001",technicians:["Tech1","Tech2"],closeFlg:"N",breakTimes:[{startTime:"2014/01/03 11:30",endTime:"2014/01/03 12:00"}]},
+        {rown:2,workBay:"WB002",technicians:["Tech1","Tech2"],closeFlg:"N",breakTimes:[{startTime:"2014/01/03 11:00",endTime:"2014/01/03 12:00"}]},
+        {rown:3,workBay:"WB003",technicians:["Tech1","Tech2"],closeFlg:"N",breakTimes:[{startTime:"2014/01/03 11:00",endTime:"2014/01/03 12:00"}]},
+        {rown:4,workBay:"WB004",technicians:["Tech1","Tech2"],closeFlg:"N",breakTimes:[{startTime:"2014/01/03 11:20",endTime:"2014/01/03 12:30"}]},
+        {rown:5,workBay:"WB005",technicians:["Tech1","Tech2"],closeFlg:"N",breakTimes:[{startTime:"2014/01/03 13:00",endTime:"2014/01/03 13:45"}]},
+        {rown:6,workBay:"WB006",technicians:["Tech1","Tech2"],closeFlg:"N",breakTimes:[{startTime:"2014/01/03 11:30",endTime:"2014/01/03 12:30"}]},
+        {rown:7,workBay:"WB007",technicians:["Tech1","Tech2"],closeFlg:"Y",breakTimes:[{startTime:"2014/01/03 11:00",endTime:"2014/01/03 11:05"}]}
+    ],
+    timeSlots:["08:00 - 09:00","09:00 - 10:00","10:00 - 11:00","11:00 - 12:00","12:00 - 13:00","13:00 - 14:00",
+        "14:00 - 15:00","15:00 - 16:00","16:00 - 17:00","17:00 - 18:00","18:00 - 19:00","19:00 - 20:00",
+        "20:00 - 21:00","21:00 - 22:00","22:00 - 23:00","23:00 - 24:00",
+        "00:00 - 01:00","01:00 - 02:00","02:00 - 03:00","03:00 - 04:00","04:00 - 05:00","05:00 - 06:00",
+        "06:00 - 07:00","07:00 - 08:00"
+    ],
+    curTime:"2014/01/03 08:35",
+    dayStartTime:"2014/01/03 08:00",
+    vehicles:[
+        {serviceNo:"SVC001",workBay:"WB001",regNo:"VEH-555",stsCd:"01",reasonCd:"",wshSltFlg:"",startTime:"2014/01/03 08:00",endTime:"2014/01/03 09:10"},
+        {serviceNo:"SVC002",workBay:"WB002",regNo:"VEH-555",stsCd:"01",reasonCd:"",wshSltFlg:"",startTime:"2014/01/03 10:15",endTime:"2014/01/03 10:50"},
+        {serviceNo:"SVC003",workBay:"WB002",regNo:"VEH-555",stsCd:"02",reasonCd:"",wshSltFlg:"",startTime:"2014/01/03 08:40",endTime:"2014/01/03 09:30"},
+        {serviceNo:"SVC004",workBay:"WB003",regNo:"VEH-555",stsCd:"03",reasonCd:"01",wshSltFlg:"",startTime:"2014/01/03 08:10",endTime:"2014/01/03 08:50"},
+        {serviceNo:"SVC005",workBay:"WB003",regNo:"VEH-555",stsCd:"04",reasonCd:"",wshSltFlg:"",startTime:"2014/01/03 08:40",endTime:"2014/01/03 09:30"},
+        {serviceNo:"SVC006",workBay:"WB004",regNo:"VEH-555",stsCd:"05",reasonCd:"",wshSltFlg:"",startTime:"2014/01/03 08:40",endTime:"2014/01/03 09:30"},
+        {serviceNo:"SVC006",workBay:"WB005",regNo:"VEH-555",stsCd:"08",reasonCd:"",wshSltFlg:"Y",startTime:"2014/01/03 08:00",endTime:"2014/01/03 08:30"},
+        {serviceNo:"SVC008",workBay:"WB006",regNo:"VEH-555",stsCd:"08",reasonCd:"",wshSltFlg:"",startTime:"2014/01/03 08:40",endTime:"2014/01/03 09:30"},
+        {serviceNo:"SVC009",workBay:"WB006",regNo:"VEH-555",stsCd:"06",reasonCd:"",wshSltFlg:"",startTime:"2014/01/03 08:40",endTime:"2014/01/03 09:30"},
+        {serviceNo:"SVC010",workBay:"",regNo:"VEH-555",stsCd:"00",reasonCd:"",wshSltFlg:"",startTime:"",endTime:""},//Not Yet Allocated
+        {serviceNo:"SVC011",workBay:"",regNo:"VEH-555",stsCd:"00",reasonCd:"",wshSltFlg:"",startTime:"",endTime:""},//Not Yet Allocated
+        {serviceNo:"SVC012",workBay:"",regNo:"VEH-555",stsCd:"00",reasonCd:"",wshSltFlg:"",startTime:"",endTime:""},//Not Yet Allocated
+        {serviceNo:"SVC013",workBay:"",regNo:"VEH-555",stsCd:"00",reasonCd:"",wshSltFlg:"",startTime:"",endTime:""}//Not Yet Allocated
+    ]
+};
+//Application
+var todoApp = angular.module("todoApp", []);
+
+//Controller
+todoApp.controller("ToDoCtrl", function ($scope) {
+    //For use in javascript
+    $scope.window=window;
+
+    //Required Variables
+    $scope.todo = model;
+    $scope.selServiceNo = '';
+    $scope.currContainerDiv = '';
+    $scope.destRow = 1;
+    $scope.destCol = 1;
+    $scope.maxSlotNo = 288;//24*12 Total Number of Slots in 24 hours, considering each slot is of 5 min
+    $scope.timePerSlot = 5;//Min/slot
+
+    //Variables for current row/col
+    $scope.currWorkbay = 0;
+    $scope.currWorkbayBrkSlts = [];
+
+    //Functions
+    //Gets Col Span of Header
+    $scope.getHeadColSpan = function() {
+        return 60/$scope.timePerSlot;
+    };
+
+    //Returns Number of Slots
+    $scope.getTimes = function(rec) {
+        var maxSlot = $scope.maxSlotNo;
+        return new Array(maxSlot);
+    };
+
+    //Returns the Workbay Name
+    $scope.getWorkbayName = function(rec) {
+        if($scope.currWorkbay!=rec){
+            $scope.currWorkbayBrkSlts = [];
+            $scope.currWorkbay=rec;
+        }
+        //Prepare the currWorkbayBrkSlts array
+        for(var i=0;i<model.workBays[rec].breakTimes.length;i++){
+            var stTm = model.workBays[rec].breakTimes[i].startTime;
+            var endTm = model.workBays[rec].breakTimes[i].endTime;
+
+            var lobjWbStart = new Date(model.dayStartTime);
+            var lobjBrkStart = new Date(stTm);
+            var lobjBrkEnd = new Date(endTm);
+            var diffMs = lobjBrkStart - lobjWbStart;
+            var sltStart = Math.round(((diffMs/1000)/60)/5);
+            var diffMs = lobjBrkEnd - lobjWbStart;
+            var sltEnd = Math.round(((diffMs/1000)/60)/5);
+
+            $scope.currWorkbayBrkSlts.push({stSlt:sltStart,endSlt:sltEnd});
+        }
+        //console.log(model.workBays[rec].workBay);
+        return model.workBays[rec].workBay;
+    }
+
+    //Returns true if current slot falls under break time
+    $scope.getIsBreakTime = function(slot) {
+        for(var i=0;i<$scope.currWorkbayBrkSlts.length;i++){
+            if(slot>=$scope.currWorkbayBrkSlts[i].stSlt && slot<$scope.currWorkbayBrkSlts[i].endSlt){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //Sets value of selected row and column - Used for Tracking Selected Chip
+    $scope.setSelRowCol = function(svcNo){
+        console.log("Calleddddddddd");
+        $scope.selServiceNo=svcNo;
+    };
+
+    //Sets value of selected row and column - Used for Tracking Selected Chip
+    $scope.setSetRowCol = function(workBay,slot){
+        var curSvcNo = $scope.selServiceNo;
+        var jobStartTime = new Date(model.dayStartTime);
+        var jobEndTime = new Date(model.dayStartTime);
+        jobStartTime.setMinutes(jobStartTime.getMinutes() + (5*(slot-1)));
+        jobEndTime.setMinutes(jobEndTime.getMinutes() + 5*(slot-1+6));
+
+        var done = false;
+        //Look for the source Chip and change its details
+        angular.forEach(model.vehicles, function(vehicle){
+            console.log("setSetRowCol called");
+            if(vehicle.serviceNo== curSvcNo) {
+                if(!done) {
+                    vehicle.stsCd = '01';
+                    vehicle.workBay = workBay;
+                    //Get Start Time
+                    var yyyy=jobStartTime.getFullYear();
+                    var mm=jobStartTime.getMonth()+1;
+                    if(mm<10){mm='0'+mm;}
+                    var dd=jobStartTime.getDate();
+                    if(mm<10){dd='0'+dd;}
+                    var hh24=jobStartTime.getHours();
+                    if(hh24<10){hh24='0'+hh24;}
+                    var mi=jobStartTime.getMinutes();
+                    if(mi<10){mi='0'+mi;}
+                    var StartTimeText=yyyy+"/"+mm+"/"+dd+" "+hh24+":"+mi;
+                    //get End Time
+                    yyyy=jobEndTime.getFullYear();
+                    mm=jobEndTime.getMonth()+1;
+                    if(mm<10){mm='0'+mm;}
+                    dd=jobEndTime.getDate();
+                    if(mm<10){dd='0'+dd;}
+                    hh24=jobEndTime.getHours();
+                    if(hh24<10){hh24='0'+hh24;}
+                    mi=jobEndTime.getMinutes();
+                    if(mi<10){mi='0'+mi;}
+                    EndTimeText=yyyy+"/"+mm+"/"+dd+" "+hh24+":"+mi;
+                    console.log(StartTimeText+" "+EndTimeText);
+
+                    vehicle.startTime = StartTimeText;
+                    vehicle.endTime = EndTimeText;
+                    done=true;
+                }
+            }
+        });
+        //Trying to remove the existing DIV of the cell being dragged.
+        //If already planned, will be removed, else it will not be found and exception will be generated
+        try {
+            document.getElementById($scope.currContainerDiv).innerHTML = "&nbsp;"
+        }catch (e){
+            console.log(e);
+        }
+        angular.forEach(model.vehicles, function(vehicle){
+            console.log(vehicle.serviceNo+" "+vehicle.workBay+" "+vehicle.startTime+" "+vehicle.endTime);
+        });
+        $scope.$apply();
+        $scope.selServiceNo = '';
+        this.$emit('ngRepeatFinished');
+    };
+
+    //Returns x,y position of Time Line
+    $scope.getTimeLinePos = function() {
+        var lobjCurDate = new Date(model.curTime);
+        var lobjStartDate = new Date(model.dayStartTime);
+        diffMs = lobjCurDate - lobjStartDate;
+        var diffMins = Math.round(((diffMs/1000)/60)/5);
+        return diffMins;
+    }
+
+    $scope.$on('ngRepeatFinished', function(ngRepeatFinishedEvent) {
+        for(var v=0;v<model.vehicles.length;v++){
+            if(model.vehicles[v].stsCd!='00') {
+                var wbName = model.vehicles[v].workBay;
+                var stTm = model.vehicles[v].startTime;
+                var endTm = model.vehicles[v].endTime;
+                var currTime = new Date(model.curTime);
+                var rsnCd = model.vehicles[v].reasonCd;
+
+                var lobjWbStart = new Date(model.dayStartTime);
+                var lobjJobStart = new Date(stTm);
+                var lobjCurrTime = new Date(currTime);
+                var lobjJobEnd = new Date(endTm);
+                var diffMs = lobjJobStart - lobjWbStart;
+                var sltStart = Math.round(((diffMs / 1000) / 60) / 5) + 1;
+                var diffMs = lobjJobEnd - lobjWbStart;
+                var sltEnd = Math.round(((diffMs / 1000) / 60) / 5);
+                var diffMs = lobjCurrTime - lobjWbStart;
+                var currTimeSlt = Math.round(((diffMs / 1000) / 60) / 5) + 1;
+
+                var backColorCode = '';
+                var blinking = '';
+
+                switch (model.vehicles[v].stsCd) {
+                    case '01':
+                        if(lobjCurrTime>lobjJobStart){
+                            backColorCode = "red";
+                        }else{
+                            backColorCode = "lightblue";
+                        }
+                        break;
+                    case '02':
+                        backColorCode = "orange";
+                        blinking = "class='blink_me'";
+                        break;
+                    case '03':
+                        backColorCode = "orange";
+                        blinking = "class='blink_me'";
+                        break;
+                    case '04':
+                        backColorCode = "lightgrey";
+                        break;
+                    case '05':
+                        backColorCode = "lightgrey";
+                        break;
+                    case '06':
+                        backColorCode = "lightgrey";
+                        break;
+                    case '07':
+                        backColorCode = "lightgrey";
+                        break;
+                    case '08':
+                        backColorCode = "lightgrey";
+                        break;
+                }
+
+                var startCell = document.getElementById(wbName + '_' + sltStart);
+                var divWidth = 1.0625 * (sltEnd - sltStart + 1) + 0.0625;//1em = 16px
+                startCell.innerHTML = "<div "+blinking+" style='position: absolute; opacity: .75; overflow:hidden;"
+                        + "left:" + (startCell.left + 1) + "px; "
+                        + "width:" + divWidth + "em; "
+                        + "background-color: " + backColorCode + ";"
+                        + "padding:0px; height:4.95em'"
+                        + "><a href='#' style='color: #000000'>"
+                        + model.vehicles[v].serviceNo + "<br>"
+                        + model.vehicles[v].regNo
+                        + "</a></div>";
+            }
+        }
+        //Adding Time Line
+        var startCell = document.getElementById(model.workBays[0].workBay + '_' + currTimeSlt);
+        var divWidth = 1;
+        startCell.innerHTML = "<div "
+                +" style='position: absolute; opacity: .75; overflow:hidden; width:2px;"
+                + "left:" + (startCell.left) + "px; "
+                + "background-color: red; "
+                + "padding:0px; height:"+5*model.workBays.length+"em;'>"
+                + "&nbsp;"
+                + "</div>";
+    });
+});
+
+todoApp.directive('onFinishRender', function ($timeout) {
+    return {
+        restrict: 'A',
+        link: function (scope, element, attr) {
+            if (scope.$last === true) {
+                $timeout(function () {
+                    scope.$emit('ngRepeatFinished');
+                });
+            }
+        }
+    };
+});
+
+todoApp.filter('filterReworkUnderInv', function () {
+    return function (items) {
+        var filtered = [];
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            if (item.stsCd == '04'|| item.stsCd == '05') {
+                filtered.push(item);
+            }
+        }
+        return filtered;
+    };
+});
+
+function scrollLeftTable(){
+    var oElement=document.getElementById("leftTable");
+    if(oElement!=null){
+        oElement.scrollTop=document.getElementById("rightTable").scrollTop;
+        //console.log("Scrolling");
+    }
+    scrollTopTable();
+}
+
+function scrollTopTable(){
+    var oElement=document.getElementById("topTable");
+    if(oElement!=null){
+        oElement.scrollLeft=document.getElementById("rightTable").scrollLeft;
+    }
+}
+
+function setSelRowColJS(obj) {
+    var scope = angular.element($("#bayMgmtApp")).scope();
+    var txt = obj.id.split("~");
+    var param = txt[0];
+    var containerDiv = txt[1];
+    //document.getElementById(containerDiv).innerHTML="&nbsp;"
+    scope.currContainerDiv=containerDiv;
+    scope.setSelRowCol(param);
+}
+</script>
+</head>
+<body ng-controller="ToDoCtrl" ng-cloak id="bayMgmtApp">
+<div style="height: 3em; background-color: #7aba7b;">
+    <h1 style="text-align: center">PART SHOP</h1>
+</div>
+<div style="height: 2em;position: relative">
+    <a href="#">&lt;&lt; Previous Day</a> {{todo.date}} <a href="#">Previous Day &gt;&gt;</a>
+    <div
+            ng-style="{'position':'absolute',
+                    'right':'1px',
+                    'top':'1px'}">
+        <input type="button" value="Update"/>
+    </div>
+</div>
+<table cellpadding="0px">
+    <tr>
+        <td>
+            <div ng-style="{'overflow':'hidden',
+                            'height': window.innerHeight*1/25+'px',
+                            'width':window.innerWidth*1/6+'px'}">
+                <table class="table-bordered" style="background-color: #2a6496; color: #ffffff">
+                    <thead>
+                    <tr style="height: 2em">
+                        <th style="width: 8em;" nowrap>Work Bay</th>
+                        <th style="width: 8em" nowrap>Technician</th>
+                    </tr>
+                    <tr style="height: .1em">
+                        <th style="text-align: center; overflow: hidden;padding: 0em"></th>
+                        <th style="text-align: center; overflow: hidden;padding: 0em"></th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </td>
+        <td>
+            <div ng-style="{'overflow':'hidden',
+                            'height': window.innerHeight*1/25+'px',
+                            'width':window.innerWidth*5/6+'px'}"
+                 id="topTable">
+                <table class="table-bordered">
+                    <thead>
+                    <tr style="height: 2em; background-color: #2a6496; color: #ffffff">
+                        <th style="text-align: center" ng-repeat="col in todo.timeSlots"
+                            colspan={{getHeadColSpan()}} nowrap>
+                            {{col}}
+                        </th>
+                    </tr>
+                    <tr style="height: .1em">
+                        <th ng-repeat="col in getTimes(288) track by $index"
+                            style="text-align: center; overflow: hidden;padding: 0em">
+                            <div style="width: 1em;"></div>
+                        </th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <div ng-style="{'overflow':'hidden',
+                            'height':window.innerHeight*2/4+'px',
+                            'width':window.innerWidth*1/6+'px',
+                            'overflow-x':'scroll'}"
+                 id="leftTable">
+                <table class="table-bordered">
+                    <tbody>
+                    <tr ng-repeat="item in todo.workBays"
+                        ng-style="{'padding': '0em',
+                                    'height': '5em'}">
+                        <td style="width: 8em;" nowrap>
+                            {{getWorkbayName($index)}}
+                        </td>
+                        <td style="width: 8em" nowrap>
+                            <ul ng-repeat="t in item.technicians" style="padding: 0em">{{t}}</ul>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </td>
+        <td>
+            <div ng-style="{'overflow':'scroll',
+                            'position':'relative',
+                            'height':window.innerHeight*2/4+'px',
+                            'width':window.innerWidth*5/6+'px'}"
+                 id="rightTable"
+                 onscroll="javascript:scrollLeftTable();">
+                <table class="table-bordered" >
+                    <tbody>
+                    <tr ng-repeat="item in todo.workBays" style="background-color: #e0e0e0"
+                        ng-style="{'padding': '0em',
+                                        'height': item.rown==0?'1em':'5em'}"
+                        ng-if="getWorkbayName($index)" on-finish-render>
+                        <td style="text-align: center; width: 1em; padding: 0em;"
+                            ng-repeat="t in getTimes(item.rown) track by $index">
+                            <div id="{{item.workBay+'_'+($index+1)}}"
+                                 ng-if="item.rown!=0"
+                                 style="width: 1em; height: 4.95em;"
+                                 ng-style="{'background-color':(item.closeFlg=='Y'?'#e0e0e0':(getIsBreakTime($index)?'grey':'white'))}">
+                                &nbsp;
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </td>
+    </tr>
+</table>
+<table cellpadding="0px"
+       class="table-bordered"
+       ng-style="{'width':window.innerWidth+'px','height':'15em',
+                  'height': window.innerHeight*7/25+'px'}">
+    <tr style="height: 2em; background-color: #2a6496; color: #ffffff">
+        <th style="width: 20%; border-width: 1px;" nowrap>
+            Waiting for Part
+        </th>
+    </tr>
+    <tr>
+        <td style="width: 20%; border-width: 1px; vertical-align: top;">
+            <div style="text-align: center;
+                        width: 5em;
+                        background-color: #ffffff;
+                        border-color: red;
+                        border-style: dashed;
+                        border-width: 1px;
+                        display: inline-block"
+                 ng-repeat="item in todo.vehicles|filter:{reasonCd:'01'}">
+                {{item.serviceNo}}<br>{{item.regNo}}
+            </div>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
